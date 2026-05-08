@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroChain — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#020c06;--surface:#061410;--s2:#071812;--border:#0d2a18;--border2:#122e1e;--green:#00ff87;--lime:#b8ff00;--sky:#00e5ff;--danger:#ff3b5c;--amber:#ffb800;--purple:#b87fff;--text:#c8ffe0;--muted:#3a6b50;--faint:#081a10;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);font-family:'Space Grotesk',sans-serif;color:var(--text);min-height:100vh;display:flex;}
+
+/* sidebar */
+.sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0;flex-shrink:0;position:sticky;top:0;height:100vh;}
+.sb-logo{padding:24px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.sb-icon{width:38px;height:38px;border:1.5px solid var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(0,255,135,.07);box-shadow:0 0 20px rgba(0,255,135,.12);animation:plz 3s ease-in-out infinite;}
+@keyframes plz{0%,100%{box-shadow:0 0 20px rgba(0,255,135,.1);}50%{box-shadow:0 0 40px rgba(0,255,135,.28);}}
+.sb-brand{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;letter-spacing:3px;color:var(--green);}
+.sb-role{font-size:9px;color:var(--muted);letter-spacing:1.5px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;}
+.sb-nav{flex:1;padding:16px 12px;display:flex;flex-direction:column;gap:4px;}
+.nav-lbl{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;padding:12px 8px 6px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;cursor:pointer;transition:all .2s;font-size:13px;color:var(--muted);border:1px solid transparent;}
+.nav-item:hover{background:rgba(0,255,135,.05);color:var(--text);border-color:var(--border);}
+.nav-item.active{background:rgba(0,255,135,.1);color:var(--green);border-color:rgba(0,255,135,.2);}
+.nav-icon{font-size:16px;width:20px;text-align:center;}
+.sb-footer{padding:16px;border-top:1px solid var(--border);}
+.sb-user{display:flex;align-items:center;gap:10px;font-size:12px;}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--lime));display:flex;align-items:center;justify-content:center;font-size:14px;color:#020c06;font-weight:700;}
+.uname{font-weight:600;color:var(--text);font-size:12px;}
+.urole{font-size:10px;color:var(--muted);}
+.logout-btn{margin-top:8px;width:100%;padding:8px;background:rgba(255,59,92,.08);border:1px solid rgba(255,59,92,.15);border-radius:8px;color:#ff3b5c;font-size:11px;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .2s;}
+.logout-btn:hover{background:rgba(255,59,92,.15);}
+
+/* main */
+.main{flex:1;overflow-y:auto;background:var(--bg);}
+.topbar{padding:20px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:100;}
+.page-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--text);}
+.page-sub{font-size:11.5px;color:var(--muted);margin-top:2px;}
+.topbar-right{display:flex;align-items:center;gap:16px;}
+.ws-badge{display:flex;align-items:center;gap:7px;padding:6px 14px;border-radius:20px;font-size:11px;font-family:'JetBrains Mono',monospace;background:var(--faint);border:1px solid var(--border);}
+.ws-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);transition:all .3s;}
+.ws-dot.on{background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.5;}}
+.time-display{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);}
+
+.content{padding:28px 32px;}
+
+/* Alert banner */
+.alert-banner{display:none;align-items:center;gap:12px;padding:12px 18px;border-radius:10px;margin-bottom:24px;font-size:13px;font-weight:500;animation:slideIn .3s ease;}
+.alert-banner.show{display:flex;}
+.alert-banner.danger{background:rgba(255,59,92,.1);border:1px solid rgba(255,59,92,.25);color:#ff3b5c;}
+.alert-banner.warn{background:rgba(255,184,0,.1);border:1px solid rgba(255,184,0,.25);color:var(--amber);}
+@keyframes slideIn{from{transform:translateY(-10px);opacity:0;}to{transform:none;opacity:1;}}
+
+/* KPI row */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;transition:border-color .3s;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kpi.temp::before{background:linear-gradient(90deg,var(--amber),transparent);}
+.kpi.hum::before{background:linear-gradient(90deg,var(--sky),transparent);}
+.kpi.soil::before{background:linear-gradient(90deg,var(--green),transparent);}
+.kpi.gas::before{background:linear-gradient(90deg,var(--purple),transparent);}
+.kpi-icon{font-size:24px;margin-bottom:12px;}
+.kpi-val{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;line-height:1;}
+.kpi-unit{font-size:14px;font-weight:400;color:var(--muted);margin-left:4px;}
+.kpi-label{font-size:11px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:1px;}
+.kpi-status{position:absolute;top:16px;right:16px;font-size:10px;padding:3px 9px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-weight:600;}
+.kpi-status.ok{background:rgba(0,255,135,.1);color:var(--green);}
+.kpi-status.warn{background:rgba(255,184,0,.1);color:var(--amber);}
+.kpi-status.crit{background:rgba(255,59,92,.1);color:#ff3b5c;}
+
+/* Grid */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px;}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;}
+.panel-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.panel-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.panel-title .icon{font-size:16px;}
+.panel-badge{font-size:9.5px;padding:3px 9px;border-radius:5px;font-family:'JetBrains Mono',monospace;}
+.live-badge{background:rgba(0,255,135,.1);color:var(--green);animation:blink 2s infinite;}
+
+/* Sensor bars */
+.sensor-bar{margin-bottom:14px;}
+.sb-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12px;}
+.sb-name{color:var(--muted);text-transform:uppercase;letter-spacing:.8px;}
+.sb-val{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text);}
+.bar-track{height:6px;background:var(--faint);border-radius:4px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1);}
+
+/* Pump control */
+.pump-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;}
+.pump-state{display:flex;align-items:center;gap:16px;margin-bottom:20px;}
+.pump-led{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;transition:all .4s;}
+.pump-led.off{background:rgba(58,107,80,.15);border:2px solid var(--border);}
+.pump-led.on{background:rgba(0,255,135,.15);border:2px solid var(--green);box-shadow:0 0 30px rgba(0,255,135,.3);animation:pumpGlow 1.5s ease-in-out infinite;}
+@keyframes pumpGlow{0%,100%{box-shadow:0 0 20px rgba(0,255,135,.2);}50%{box-shadow:0 0 40px rgba(0,255,135,.5);}}
+.pump-info .ps-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.pump-info .ps-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-top:2px;}
+.pump-info .ps-val.on{color:var(--green);}
+.pump-info .ps-val.off{color:var(--muted);}
+.pump-btns{display:flex;gap:10px;}
+.pump-btn{flex:1;padding:12px;border-radius:9px;border:none;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+.pump-on{background:var(--green);color:#020c06;}
+.pump-on:hover{box-shadow:0 8px 24px rgba(0,255,135,.35);transform:translateY(-1px);}
+.pump-off{background:rgba(255,59,92,.1);color:#ff3b5c;border:1px solid rgba(255,59,92,.2);}
+.pump-off:hover{background:rgba(255,59,92,.2);}
+
+/* Mini sensors grid */
+.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.mini-card{background:var(--faint);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;}
+.mini-icon{font-size:20px;}
+.mini-val{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:600;}
+.mini-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-top:2px;}
+
+/* AI panel */
+.ai-bars{display:flex;flex-direction:column;gap:14px;}
+.ai-bar{display:flex;align-items:center;gap:14px;}
+.ai-lbl{font-size:11px;color:var(--muted);width:80px;text-transform:uppercase;letter-spacing:.5px;}
+.ai-track{flex:1;height:8px;background:var(--faint);border-radius:4px;overflow:hidden;}
+.ai-fill{height:100%;border-radius:4px;transition:width 1s ease;}
+.ai-pct{font-family:'JetBrains Mono',monospace;font-size:11px;width:36px;text-align:right;}
+
+/* Blockchain */
+.chain-list{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;}
+.chain-list::-webkit-scrollbar{width:4px;}
+.chain-list::-webkit-scrollbar-track{background:var(--faint);}
+.chain-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.block-item{background:var(--faint);border:1px solid var(--border);border-radius:9px;padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;display:flex;align-items:center;gap:12px;transition:border-color .2s;}
+.block-item:first-child{border-color:rgba(0,255,135,.2);}
+.block-num{color:var(--green);font-size:13px;font-weight:600;min-width:28px;}
+.block-hash{color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.block-time{color:var(--muted);font-size:10px;white-space:nowrap;}
+
+/* Alerts log */
+.alert-list{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow-y:auto;}
+.alert-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;font-size:12px;border:1px solid;}
+.alert-item.crit{background:rgba(255,59,92,.05);border-color:rgba(255,59,92,.15);color:#ff8099;}
+.alert-item.warn{background:rgba(255,184,0,.05);border-color:rgba(255,184,0,.15);color:var(--amber);}
+.alert-item.info{background:rgba(0,255,135,.05);border-color:rgba(0,255,135,.1);color:var(--green);}
+.alert-time{font-family:'JetBrains Mono',monospace;font-size:10px;margin-top:2px;opacity:.6;}
+
+/* Sections */
+.section{display:none;}
+.section.active{display:block;}
+
+/* Camera snapshot */
+.cam-area{text-align:center;}
+.cam-img{width:100%;border-radius:10px;border:1px solid var(--border);background:var(--faint);min-height:180px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;margin-bottom:16px;}
+.cam-img img{width:100%;border-radius:10px;}
+.refresh-btn{padding:8px 20px;background:rgba(0,255,135,.1);border:1px solid rgba(0,255,135,.2);border-radius:8px;color:var(--green);font-size:12px;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .2s;}
+.refresh-btn:hover{background:rgba(0,255,135,.2);}
+</style>
+</head>
+<body>
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-icon">🌿</div>
+    <div><div class="sb-brand">AGROCHAIN</div><div class="sb-role">Admin Panel</div></div>
+  </div>
+  <div class="sb-nav">
+    <div class="nav-lbl">Navigation</div>
+    <div class="nav-item active" onclick="showSection('dashboard',this)"><span class="nav-icon">📊</span> Tableau de Bord</div>
+    <div class="nav-item" onclick="showSection('sensors',this)"><span class="nav-icon">📡</span> Capteurs</div>
+    <div class="nav-item" onclick="showSection('pump',this)"><span class="nav-icon">💧</span> Irrigation</div>
+    <div class="nav-item" onclick="showSection('ai',this)"><span class="nav-icon">🤖</span> IA Plantes</div>
+    <div class="nav-item" onclick="showSection('system',this)"><span class="nav-icon">🖥️</span> Système</div>
+    <div class="nav-item" onclick="showSection('blockchain',this)"><span class="nav-icon">🔗</span> Blockchain</div>
+    <div class="nav-item" onclick="showSection('alerts',this)"><span class="nav-icon">🔔</span> Alertes</div>
+  </div>
+  <div class="sb-footer">
+    <div class="sb-user">
+      <div class="avatar">A</div>
+      <div><div class="uname" id="uname">Admin</div><div class="urole">Administrateur</div></div>
+    </div>
+    <button class="logout-btn" onclick="logout()">⬅ Déconnexion</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title" id="pageTitle">Tableau de Bord</div>
+      <div class="page-sub">Vue d'ensemble de la ferme intelligente</div>
+    </div>
+    <div class="topbar-right">
+      <div class="ws-badge"><div class="ws-dot" id="wsDot"></div><span id="wsStatus">Connexion...</span></div>
+      <div class="time-display" id="clock"></div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ALERT BANNER -->
+    <div class="alert-banner" id="alertBanner">
+      <span id="alertText"></span>
+    </div>
+
+    <!-- ══════ DASHBOARD ══════ -->
+    <div class="section active" id="sec-dashboard">
+      <div class="kpi-row">
+        <div class="kpi temp">
+          <div class="kpi-status ok" id="kpi-temp-s">OK</div>
+          <div class="kpi-icon">🌡️</div>
+          <div><span class="kpi-val" id="kpi-temp">--</span><span class="kpi-unit">°C</span></div>
+          <div class="kpi-label">Température</div>
+        </div>
+        <div class="kpi hum">
+          <div class="kpi-status ok" id="kpi-hum-s">OK</div>
+          <div class="kpi-icon">💧</div>
+          <div><span class="kpi-val" id="kpi-hum">--</span><span class="kpi-unit">%</span></div>
+          <div class="kpi-label">Humidité</div>
+        </div>
+        <div class="kpi soil">
+          <div class="kpi-status ok" id="kpi-soil-s">OK</div>
+          <div class="kpi-icon">🌱</div>
+          <div><span class="kpi-val" id="kpi-soil">--</span><span class="kpi-unit">%</span></div>
+          <div class="kpi-label">Sol</div>
+        </div>
+        <div class="kpi gas">
+          <div class="kpi-status ok" id="kpi-gas-s">OK</div>
+          <div class="kpi-icon">💨</div>
+          <div><span class="kpi-val" id="kpi-gas">--</span><span class="kpi-unit">ppm</span></div>
+          <div class="kpi-label">Qualité Air</div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <div class="panel-hd">
+            <div class="panel-title"><span class="icon">📡</span> Capteurs Live</div>
+            <span class="panel-badge live-badge">● LIVE</span>
+          </div>
+          <div class="sensor-bar">
+            <div class="sb-top"><span class="sb-name">Température</span><span class="sb-val" id="b-temp">-- °C</span></div>
+            <div class="bar-track"><div class="bar-fill" id="bf-temp" style="width:0%;background:linear-gradient(90deg,#ffb800,#ff6b00);"></div></div>
+          </div>
+          <div class="sensor-bar">
+            <div class="sb-top"><span class="sb-name">Humidité</span><span class="sb-val" id="b-hum">-- %</span></div>
+            <div class="bar-track"><div class="bar-fill" id="bf-hum" style="width:0%;background:linear-gradient(90deg,#00e5ff,#0099cc);"></div></div>
+          </div>
+          <div class="sensor-bar">
+            <div class="sb-top"><span class="sb-name">Humidité Sol</span><span class="sb-val" id="b-soil">-- %</span></div>
+            <div class="bar-track"><div class="bar-fill" id="bf-soil" style="width:0%;background:linear-gradient(90deg,#00ff87,#00cc6a);"></div></div>
+          </div>
+          <div class="sensor-bar">
+            <div class="sb-top"><span class="sb-name">Gaz MQ135</span><span class="sb-val" id="b-gas">-- ppm</span></div>
+            <div class="bar-track"><div class="bar-fill" id="bf-gas" style="width:0%;background:linear-gradient(90deg,#b87fff,#8844cc);"></div></div>
+          </div>
+          <div class="sensor-bar">
+            <div class="sb-top"><span class="sb-name">Débit Eau</span><span class="sb-val" id="b-flow">-- L/min</span></div>
+            <div class="bar-track"><div class="bar-fill" id="bf-flow" style="width:0%;background:linear-gradient(90deg,#00e5ff,#00ff87);"></div></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hd">
+            <div class="panel-title"><span class="icon">🤖</span> IA Santé Plantes</div>
+            <span class="panel-badge live-badge">● LIVE</span>
+          </div>
+          <div class="ai-bars">
+            <div class="ai-bar">
+              <div class="ai-lbl">Santé</div>
+              <div class="ai-track"><div class="ai-fill" id="ai-health" style="width:0%;background:linear-gradient(90deg,#00ff87,#b8ff00);"></div></div>
+              <div class="ai-pct" id="ai-health-v" style="color:#00ff87">0%</div>
+            </div>
+            <div class="ai-bar">
+              <div class="ai-lbl">Stress</div>
+              <div class="ai-track"><div class="ai-fill" id="ai-stress" style="width:0%;background:linear-gradient(90deg,#ffb800,#ff6b00);"></div></div>
+              <div class="ai-pct" id="ai-stress-v" style="color:#ffb800">0%</div>
+            </div>
+            <div class="ai-bar">
+              <div class="ai-lbl">Maladie</div>
+              <div class="ai-track"><div class="ai-fill" id="ai-disease" style="width:0%;background:linear-gradient(90deg,#ff3b5c,#cc0033);"></div></div>
+              <div class="ai-pct" id="ai-disease-v" style="color:#ff3b5c">0%</div>
+            </div>
+            <div class="ai-bar">
+              <div class="ai-lbl">Anomalie</div>
+              <div class="ai-track"><div class="ai-fill" id="ai-anomaly" style="width:0%;background:linear-gradient(90deg,#b87fff,#8844cc);"></div></div>
+              <div class="ai-pct" id="ai-anomaly-v" style="color:#b87fff">0%</div>
+            </div>
+          </div>
+          <div style="margin-top:18px;">
+            <img id="camWrap" style="width:100%;min-height:130px;max-height:280px;object-fit:cover;border-radius:10px" src="" onerror="this.style.opacity=0.3"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid3">
+        <div class="mini-card">
+          <div class="mini-icon">🔥</div>
+          <div><div class="mini-val" id="m-flame" style="color:#ff3b5c;">--</div><div class="mini-lbl">Flamme</div></div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-icon">📏</div>
+          <div><div class="mini-val" id="m-dist" style="color:#00e5ff;">-- cm</div><div class="mini-lbl">Distance</div></div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-icon">🌧️</div>
+          <div><div class="mini-val" id="m-ldr" style="color:#ffb800;">--</div><div class="mini-lbl">Luminosité</div></div>
+        </div>
+      </div>
+
+      <div class="pump-card">
+        <div class="panel-hd">
+          <div class="panel-title"><span class="icon">💧</span> Contrôle Pompe à Eau</div>
+          <span class="panel-badge live-badge" id="pump-badge">● OFF</span>
+        </div>
+        <div class="pump-state">
+          <div class="pump-led off" id="pumpLed">💧</div>
+          <div class="pump-info">
+            <div class="ps-label">État Pompe</div>
+            <div class="ps-val off" id="pumpVal">ARRÊTÉE</div>
+          </div>
+        </div>
+        <div style="padding:10px 14px;background:rgba(0,255,135,.05);border:1px dashed rgba(0,255,135,.2);border-radius:9px;font-size:12px;color:var(--muted);">👁 Surveillance uniquement — contrôle réservé à l'utilisateur</div>
+      </div>
+    </div>
+
+    <!-- ══════ SENSORS ══════ -->
+    <div class="section" id="sec-sensors">
+      <div class="kpi-row">
+        <div class="kpi temp"><div class="kpi-icon">🌡️</div><div><span class="kpi-val" id="s-temp">--</span><span class="kpi-unit">°C</span></div><div class="kpi-label">Température</div></div>
+        <div class="kpi hum"><div class="kpi-icon">💧</div><div><span class="kpi-val" id="s-hum">--</span><span class="kpi-unit">%</span></div><div class="kpi-label">Humidité</div></div>
+        <div class="kpi soil"><div class="kpi-icon">🌱</div><div><span class="kpi-val" id="s-soil">--</span><span class="kpi-unit">%</span></div><div class="kpi-label">Humidité Sol</div></div>
+        <div class="kpi gas"><div class="kpi-icon">💨</div><div><span class="kpi-val" id="s-gas">--</span><span class="kpi-unit">ppm</span></div><div class="kpi-label">Gaz MQ135</div></div>
+      </div>
+      <div class="grid2">
+        <div class="panel">
+          <div class="panel-hd"><div class="panel-title"><span class="icon">🌊</span> Débit d'Eau</div></div>
+          <div style="font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:#00e5ff;margin:10px 0;"><span id="s-flow">--</span> <span style="font-size:18px;color:var(--muted);">L/min</span></div>
+          <div style="font-size:12px;color:var(--muted);">Volume total estimé : <span id="s-flowtotal" style="color:var(--text);">0 L</span></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hd"><div class="panel-title"><span class="icon">📏</span> Capteur Ultrasonique</div></div>
+          <div style="font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:#00e5ff;margin:10px 0;"><span id="s-dist">--</span> <span style="font-size:18px;color:var(--muted);">cm</span></div>
+          <div style="font-size:12px;color:var(--muted);">Niveau du réservoir</div>
+        </div>
+      </div>
+      <div class="grid3">
+        <div class="panel">
+          <div class="panel-hd"><div class="panel-title"><span class="icon">🔥</span> Capteur Flamme</div></div>
+          <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin:10px 0;" id="s-flame">--</div>
+        </div>
+        <div class="panel">
+          <div class="panel-hd"><div class="panel-title"><span class="icon">☀️</span> Luminosité LDR</div></div>
+          <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#ffb800;margin:10px 0;"><span id="s-ldr">--</span></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hd"><div class="panel-title"><span class="icon">🌧️</span> Pluie</div></div>
+          <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#00e5ff;margin:10px 0;" id="s-rain">--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ PUMP ══════ -->
+    <div class="section" id="sec-pump">
+      <div class="pump-card" style="max-width:500px;margin:0 auto;">
+        <div class="panel-hd"><div class="panel-title"><span class="icon">💧</span> Contrôle Irrigation</div></div>
+        <div class="pump-state">
+          <div class="pump-led off" id="pumpLed2">💧</div>
+          <div class="pump-info">
+            <div class="ps-label">État Pompe</div>
+            <div class="ps-val off" id="pumpVal2">ARRÊTÉE</div>
+          </div>
+        </div>
+        <div style="padding:12px 16px;background:rgba(0,255,135,.05);border:1px dashed rgba(0,255,135,.2);border-radius:9px;font-size:13px;color:var(--muted);">👁 Mode surveillance — le contrôle de la pompe est réservé à l'utilisateur terrain</div>
+      </div>
+    </div>
+
+    <!-- ══════ AI ══════ -->
+    <div class="section" id="sec-ai">
+      <div class="grid2">
+        <div class="panel">
+          <div class="panel-hd"><div class="panel-title"><span class="icon">🤖</span> Analyse IA</div><span class="panel-badge live-badge">● LIVE</span></div>
+          <div class="ai-bars" style="margin-bottom:20px;">
+            <div class="ai-bar"><div class="ai-lbl">Santé</div><div class="ai-track"><div class="ai-fill" id="ai2-health" style="width:0%;background:linear-gradient(90deg,#00ff87,#b8ff00);"></div></div><div class="ai-pct" id="ai2-health-v" style="color:#00ff87">0%</div></div>
+            <div class="ai-bar"><div class="ai-lbl">Stress</div><div class="ai-track"><div class="ai-fill" id="ai2-stress" style="width:0%;background:linear-gradient(90deg,#ffb800,#ff6b00);"></div></div><div class="ai-pct" id="ai2-stress-v" style="color:#ffb800">0%</div></div>
+            <div class="ai-bar"><div class="ai-lbl">Maladie</div><div class="ai-track"><div class="ai-fill" id="ai2-disease" style="width:0%;background:linear-gradient(90deg,#ff3b5c,#cc0033);"></div></div><div class="ai-pct" id="ai2-disease-v" style="color:#ff3b5c">0%</div></div>
+            <div class="ai-bar"><div class="ai-lbl">Anomalie</div><div class="ai-track"><div class="ai-fill" id="ai2-anomaly" style="width:0%;background:linear-gradient(90deg,#b87fff,#8844cc);"></div></div><div class="ai-pct" id="ai2-anomaly-v" style="color:#b87fff">0%</div></div>
+          </div>
+        </div>
+        <div class="panel cam-area">
+          <div class="panel-hd"><div class="panel-title"><span class="icon">📷</span> Caméra USB</div></div>
+          <img id="camWrap2" src="/snapshot" style="width:100%;max-height:280px;object-fit:cover;border-radius:10px;border:1px solid var(--border)" onerror="this.src=''"/>
+          <button class="refresh-btn" onclick="refreshCam()">🔄 Actualiser</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SYSTEME STATUS -->
+    <div class="section" id="sec-system">
+      <div class="panel">
+        <div class="panel-hd">
+          <div class="panel-title"><span class="icon">🖥️</span> Statut Système</div>
+        </div>
+        <div style="padding:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+          <!-- ESP32 -->
+          <div style="background:var(--faint);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center">
+            <div style="font-size:28px">📡</div>
+            <div style="font-size:12px;color:var(--muted);margin:6px 0">ESP32</div>
+            <div id="status-esp32" style="font-size:11px;padding:4px 10px;border-radius:6px;background:rgba(0,255,135,.1);color:var(--green);font-weight:600">Vérification...</div>
+          </div>
+          <!-- Camera -->
+          <div style="background:var(--faint);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center">
+            <div style="font-size:28px">📷</div>
+            <div style="font-size:12px;color:var(--muted);margin:6px 0">Caméra USB</div>
+            <div id="status-camera" style="font-size:11px;padding:4px 10px;border-radius:6px;background:rgba(0,255,135,.1);color:var(--green);font-weight:600">Vérification...</div>
+          </div>
+          <!-- MQTT -->
+          <div style="background:var(--faint);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center">
+            <div style="font-size:28px">🔄</div>
+            <div style="font-size:12px;color:var(--muted);margin:6px 0">Mosquitto MQTT</div>
+            <div id="status-mqtt" style="font-size:11px;padding:4px 10px;border-radius:6px;background:rgba(0,255,135,.1);color:var(--green);font-weight:600">Actif</div>
+          </div>
+          <!-- Flask -->
+          <div style="background:var(--faint);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center">
+            <div style="font-size:28px">🌐</div>
+            <div style="font-size:12px;color:var(--muted);margin:6px 0">Serveur Flask</div>
+            <div id="status-flask" style="font-size:11px;padding:4px 10px;border-radius:6px;background:rgba(0,255,135,.1);color:var(--green);font-weight:600">Actif</div>
+          </div>
+          <!-- Hyperledger -->
+          <div style="background:var(--faint);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center">
+            <div style="font-size:28px">🔗</div>
+            <div style="font-size:12px;color:var(--muted);margin:6px 0">Hyperledger</div>
+            <div id="status-hlf" style="font-size:11px;padding:4px 10px;border-radius:6px;background:rgba(255,184,0,.1);color:var(--amber);font-weight:600">Vérification...</div>
+          </div>
+          <!-- ML Model -->
+          <div style="background:var(--faint);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center">
+            <div style="font-size:28px">🤖</div>
+            <div style="font-size:12px;color:var(--muted);margin:6px 0">ML Random Forest</div>
+            <div id="status-ml" style="font-size:11px;padding:4px 10px;border-radius:6px;background:rgba(0,255,135,.1);color:var(--green);font-weight:600">87.10% acc.</div>
+          </div>
+        </div>
+        <!-- CPU RAM TEMP -->
+        <div style="padding:0 20px 20px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+          <div style="background:var(--faint);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center">
+            <div style="font-size:12px;color:var(--muted)">CPU Raspberry Pi</div>
+            <div id="sys-cpu" style="font-size:24px;font-weight:700;color:var(--green);margin:8px 0">--%</div>
+          </div>
+          <div style="background:var(--faint);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center">
+            <div style="font-size:12px;color:var(--muted)">RAM utilisée</div>
+            <div id="sys-ram" style="font-size:24px;font-weight:700;color:var(--teal);margin:8px 0">-- MB</div>
+          </div>
+          <div style="background:var(--faint);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center">
+            <div style="font-size:12px;color:var(--muted)">Température Pi</div>
+            <div id="sys-temp" style="font-size:24px;font-weight:700;color:var(--amber);margin:8px 0">--°C</div>
+          </div>
+        </div>
+        <!-- Camera Live -->
+        <div style="padding:0 20px 20px">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Caméra Live — Vue Admin</div>
+          <img id="adminCam" src="/snapshot" style="width:100%;max-height:300px;object-fit:cover;border-radius:10px;border:1px solid var(--border)" onerror="this.style.opacity=0.3"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ BLOCKCHAIN ══════ -->
+    <div class="section" id="sec-blockchain">
+      <div class="panel">
+        <div class="panel-hd">
+          <div class="panel-title"><span class="icon">🔗</span> Ledger Blockchain SHA-256</div>
+          <span class="panel-badge live-badge">● LIVE</span>
+        </div>
+        <div class="chain-list" id="chainList">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">Chargement des blocs...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ ALERTS ══════ -->
+    <div class="section" id="sec-alerts">
+      <div class="panel">
+        <div class="panel-hd"><div class="panel-title"><span class="icon">🔔</span> Journal des Alertes</div></div>
+        <div class="alert-list" id="alertList">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">Aucune alerte pour le moment</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Auth guard
+if(!localStorage.getItem('ag_role')||localStorage.getItem('ag_role')!=='admin'){window.location.href='login.html';}
+document.getElementById('uname').textContent = localStorage.getItem('ag_email')||'Admin';
+
+// Clock
+setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('fr-FR');},1000);
+
+// Navigation
+function showSection(id,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  el.classList.add('active');
+  const titles={dashboard:'Tableau de Bord',sensors:'Capteurs',pump:'Irrigation',ai:'IA Plantes',blockchain:'Blockchain',alerts:'Alertes',system:'Statut Système'};
+  document.getElementById('pageTitle').textContent=titles[id]||id;
+}
+
+function logout(){localStorage.clear();window.location.href='login.html';}
+
+// State
+let state={t:0,h:0,l:0,f:0,s:0,g:0,flame:false,pump:false,distance:0,ai_health:72,ai_stress:18,ai_disease:5,ai_anomaly:28};
+let alerts=[];
+let blockchain=[];
+let flowTotal=0;
+
+// WebSocket
+const PI_IP = window.location.hostname+(window.location.port?':'+window.location.port:'');
+let ws, wsRetry=0;
+
+function connectWS(){
+  try{
+    ws = new WebSocket(`${window.location.protocol==="https:"?"wss":"ws"}://${PI_IP}/ws`);
+    ws.onopen=()=>{
+      document.getElementById('wsDot').className='ws-dot on';
+      document.getElementById('wsStatus').textContent='Connecté';
+      wsRetry=0;
+      addAlert('info','✅ Connexion WebSocket établie');
+    };
+    ws.onmessage=(e)=>{
+      try{state=JSON.parse(e.data);updateAll();}catch(err){}
+    };
+    ws.onclose=()=>{
+      document.getElementById('wsDot').className='ws-dot';
+      document.getElementById('wsStatus').textContent='Déconnecté';
+      wsRetry++;
+      setTimeout(connectWS, Math.min(wsRetry*2000, 10000));
+    };
+    ws.onerror=()=>{
+      document.getElementById('wsStatus').textContent='Erreur';
+    };
+  }catch(e){
+    document.getElementById('wsStatus').textContent='Erreur WS';
+  }
+}
+connectWS();
+
+// Demo data (runs when not connected)
+setInterval(()=>{
+  if(!ws||ws.readyState!==1){
+    state.t = 22 + Math.sin(Date.now()/10000)*6 + (Math.random()-.5)*0.5;
+    state.h = 58 + Math.sin(Date.now()/8000)*15 + (Math.random()-.5);
+    state.s = 45 + Math.cos(Date.now()/12000)*20 + (Math.random()-.5)*2;
+    state.g = 180 + Math.random()*60;
+    state.l = 600 + Math.random()*200;
+    state.f = state.pump ? 2.4 + Math.random()*.5 : 0;
+    state.distance = 28 + Math.random()*4;
+    state.ai_health = 68 + Math.random()*20;
+    state.ai_stress = 10 + Math.random()*20;
+    state.ai_disease = Math.random()*12;
+    state.ai_anomaly = Math.random()*30;
+    updateAll();
+  }
+},1500);
+
+function updateAll(){
+  // KPIs
+  setKPI('temp',state.t.toFixed(1),state.t>35?'crit':state.t>30?'warn':'ok');
+  setKPI('hum',state.h.toFixed(0),state.h<30?'warn':state.h>85?'warn':'ok');
+  setKPI('soil',state.s.toFixed(0),state.s<25?'crit':state.s<35?'warn':'ok');
+  setKPI('gas',Math.round(state.g),state.g>400?'crit':state.g>300?'warn':'ok');
+
+  // Bars
+  setBar('temp',state.t.toFixed(1)+' °C',Math.min(100,(state.t/50)*100));
+  setBar('hum',state.h.toFixed(0)+' %',state.h);
+  setBar('soil',state.s.toFixed(0)+' %',state.s);
+  setBar('gas',Math.round(state.g)+' ppm',Math.min(100,(state.g/600)*100));
+  setBar('flow',state.f.toFixed(2)+' L/min',Math.min(100,(state.f/10)*100));
+
+  // Mini
+  setText('m-flame',state.flame?'🔥 DÉTECTÉ':'✅ OK');
+  document.getElementById('m-flame').style.color=state.flame?'#ff3b5c':'#00ff87';
+  setText('m-dist',state.distance.toFixed(0)+' cm');
+  setText('m-ldr',Math.round(state.l));
+
+  // Sensors section
+  setText('s-temp',state.t.toFixed(1));setText('s-hum',state.h.toFixed(0));
+  setText('s-soil',state.s.toFixed(0));setText('s-gas',Math.round(state.g));
+  setText('s-flow',state.f.toFixed(2));setText('s-dist',state.distance.toFixed(0));
+  setText('s-ldr',Math.round(state.l));
+  document.getElementById('s-flame').textContent=state.flame?'🔥 FLAMME DÉTECTÉE':'✅ Aucune Flamme';
+  document.getElementById('s-flame').style.color=state.flame?'#ff3b5c':'#00ff87';
+
+  // AI
+  setAI('health',state.ai_health,'#00ff87'); setAI('stress',state.ai_stress,'#ffb800');
+  setAI('disease',state.ai_disease,'#ff3b5c'); setAI('anomaly',state.ai_anomaly,'#b87fff');
+
+  // Pump
+  const on=state.pump;
+  ['pumpLed','pumpLed2'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.className='pump-led '+(on?'on':'off');}
+  });
+  ['pumpVal','pumpVal2'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.textContent=on?'EN MARCHE':'ARRÊTÉE';el.className='ps-val '+(on?'on':'off');}
+  });
+  document.getElementById('pump-badge').textContent=on?'● ON':'● OFF';
+
+  // Flow total
+  if(state.pump) flowTotal+=state.f*(1.5/60);
+  setText('s-flowtotal',flowTotal.toFixed(1)+' L');
+
+  // Alerts
+  checkAlerts();
+}
+
+function setKPI(id,val,status){
+  setText('kpi-'+id,val);
+  const s=document.getElementById('kpi-'+id+'-s');
+  if(s){s.className='kpi-status '+status;s.textContent=status==='ok'?'OK':status==='warn'?'⚠':'⚠ CRIT';}
+}
+function setBar(id,val,pct){
+  setText('b-'+id,val);
+  const f=document.getElementById('bf-'+id);
+  if(f) f.style.width=Math.min(100,Math.max(0,pct))+'%';
+}
+function setAI(id,val,color){
+  const pct=Math.min(100,Math.max(0,val));
+  ['ai-'+id,'ai2-'+id].forEach(k=>{const el=document.getElementById(k);if(el)el.style.width=pct+'%';});
+  ['ai-'+id+'-v','ai2-'+id+'-v'].forEach(k=>{const el=document.getElementById(k);if(el)el.textContent=Math.round(pct)+'%';});
+}
+function setText(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
+
+function checkAlerts(){
+  if(state.flame&&!window._flameAlerted){window._flameAlerted=true;addAlert('crit','🔥 Flamme détectée par capteur!');}
+  if(!state.flame) window._flameAlerted=false;
+  if(state.t>35&&!window._tempAlerted){window._tempAlerted=true;addAlert('warn','🌡️ Température critique: '+state.t.toFixed(1)+'°C');}
+  if(state.t<=35) window._tempAlerted=false;
+  if(state.s<25&&!window._soilAlerted){window._soilAlerted=true;addAlert('warn','🌱 Sol trop sec: '+state.s.toFixed(0)+'%');}
+  if(state.s>=25) window._soilAlerted=false;
+}
+
+function addAlert(type,msg){
+  alerts.unshift({type,msg,time:new Date().toLocaleTimeString('fr-FR')});
+  if(alerts.length>50) alerts.pop();
+  renderAlerts();
+  if(type==='crit'){
+    const b=document.getElementById('alertBanner');
+    document.getElementById('alertText').textContent=msg;
+    b.className='alert-banner show danger';
+    setTimeout(()=>b.className='alert-banner',6000);
+  }
+}
+function renderAlerts(){
+  const el=document.getElementById('alertList');
+  if(!alerts.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">Aucune alerte</div>';return;}
+  el.innerHTML=alerts.map(a=>`<div class="alert-item ${a.type}"><div><div>${a.msg}</div><div class="alert-time">${a.time}</div></div></div>`).join('');
+}
+
+// Pump control
+function controlPump(cmd){
+  state.pump=(cmd==='ON');
+  updateAll();
+  fetch(`${window.location.protocol}//${PI_IP}/pump/${cmd.toLowerCase()}`,{method:'POST'}).catch(()=>{});
+  addAlert('info',`💧 Pompe ${cmd==='ON'?'démarrée':'arrêtée'}`);
+}
+
+// Blockchain
+function loadChain(){
+  fetch(`${window.location.protocol}//${PI_IP}/blockchain`).then(r=>r.json()).then(data=>{
+    blockchain=data;renderChain();
+  }).catch(()=>{
+    // Demo blocks
+    if(!blockchain.length){
+      for(let i=1;i<=5;i++){
+        blockchain.push({index:i,hash:'0x'+Math.random().toString(16).substr(2,16),timestamp:new Date().toISOString(),prev_hash:i===1?'0000000000000000':'prev'});
+      }
+      renderChain();
+    }
+  });
+}
+function renderChain(){
+  const el=document.getElementById('chainList');
+  el.innerHTML=blockchain.slice().reverse().map(b=>`
+    <div class="block-item">
+      <div class="block-num">#${b.index}</div>
+      <div class="block-hash">${b.hash}</div>
+      <div class="block-time">${new Date(b.timestamp).toLocaleTimeString('fr-FR')}</div>
+    </div>`).join('');
+}
+loadChain();
+setInterval(loadChain, 10000);
+
+// Camera
+function refreshCam(){
+  const t = Date.now();
+  const protocol = window.location.protocol;
+  const url = `${protocol}//${PI_IP}/snapshot?t=${t}`;
+  ['camWrap','camWrap2','adminCam'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.src = url;
+  });
+}
+setInterval(refreshCam,5000);
+
+// System status
+function loadSystemStatus(){
+  const PI_IP_ADMIN = window.location.hostname+(window.location.port?':'+window.location.port:'');
+  fetch(`${window.location.protocol}//${PI_IP_ADMIN}/system_status`)
+    .then(r=>r.json())
+    .then(d=>{
+      // ESP32
+      const esp = document.getElementById('status-esp32');
+      if(esp){ esp.textContent = d.esp32 ? 'Connecte' : 'Deconnecte';
+        esp.style.background = d.esp32 ? 'rgba(0,255,135,.1)' : 'rgba(255,59,92,.1)';
+        esp.style.color = d.esp32 ? '#00ff87' : '#ff3b5c'; }
+      // Camera
+      const cam = document.getElementById('status-camera');
+      if(cam){ cam.textContent = d.camera ? 'Connectee' : 'Non connectee';
+        cam.style.background = d.camera ? 'rgba(0,255,135,.1)' : 'rgba(255,59,92,.1)';
+        cam.style.color = d.camera ? '#00ff87' : '#ff3b5c'; }
+      // CPU RAM TEMP
+      const cpu = document.getElementById('sys-cpu');
+      const ram = document.getElementById('sys-ram');
+      const tmp = document.getElementById('sys-temp');
+      if(cpu) cpu.textContent = d.cpu+'%';
+      if(ram) ram.textContent = d.ram_used+'/'+d.ram_total+' MB';
+      if(tmp) tmp.textContent = d.pi_temp+'°C';
+      // Camera live
+      const adminCam = document.getElementById('adminCam');
+      if(adminCam){ adminCam.src=`${window.location.protocol}//${PI_IP_ADMIN}/snapshot?t=${Date.now()}`; }
+    }).catch(e=>console.log('System status error:',e));
+}
+setInterval(loadSystemStatus, 5000);
+loadSystemStatus();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+Healthy
+Early_blight
+Late_blight
+Leaf_curl
+Septoria_leaf_spot
+Powdery_mildew
+Rust
+Mosaic_virus
+Yellow_leaf_curl
+Bacterial_spot
+...

@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+*.pkl
+*.log
+venv/
+
+# Données sensibles
+blockchain.json
+*.json
+
+# Snapshots caméra
+static/snapshot.jpg
+
+# Credentials
+alert_email.py

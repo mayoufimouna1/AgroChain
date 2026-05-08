@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroChain — Connexion</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#020c06;--surface:#061410;--border:#0d2a18;--green:#00ff87;--lime:#b8ff00;--sky:#00e5ff;--danger:#ff3b5c;--text:#c8ffe0;--muted:#3a6b50;--faint:#081a10;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);font-family:'Space Grotesk',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.bg-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(0,255,135,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,135,.03) 1px,transparent 1px);background-size:60px 60px;animation:gs 25s linear infinite;}
+@keyframes gs{to{background-position:0 60px;}}
+.glow{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;}
+.g1{width:700px;height:700px;background:radial-gradient(circle,rgba(0,255,135,.07),transparent 70%);top:-200px;left:-200px;animation:dr 10s ease-in-out infinite;}
+.g2{width:500px;height:500px;background:radial-gradient(circle,rgba(0,229,255,.05),transparent 70%);bottom:-150px;right:-100px;animation:dr 13s ease-in-out infinite reverse;}
+@keyframes dr{0%,100%{transform:translate(0,0);}50%{transform:translate(30px,30px);}}
+.pt{position:fixed;inset:0;pointer-events:none;}
+.p{position:absolute;width:2px;height:2px;border-radius:50%;background:var(--green);opacity:0;animation:pf linear infinite;}
+@keyframes pf{0%{opacity:0;transform:translateY(110vh);}10%,90%{opacity:.5;}100%{opacity:0;transform:translateY(-20px);}}
+.card{position:relative;z-index:10;display:flex;width:880px;min-height:540px;border-radius:24px;overflow:hidden;border:1px solid var(--border);box-shadow:0 40px 120px rgba(0,0,0,.8);animation:rv .8s cubic-bezier(.16,1,.3,1) forwards;opacity:0;transform:translateY(24px);}
+@keyframes rv{to{opacity:1;transform:none;}}
+.left{flex:1;background:linear-gradient(140deg,#020c06,#041a0c 60%,#061f0f);padding:52px 44px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;}
+.left::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:.2;}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo-box{width:50px;height:50px;border:1.5px solid var(--green);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(0,255,135,.07);box-shadow:0 0 30px rgba(0,255,135,.15);animation:plz 3s ease-in-out infinite;}
+@keyframes plz{0%,100%{box-shadow:0 0 25px rgba(0,255,135,.12);}50%{box-shadow:0 0 50px rgba(0,255,135,.3);}}
+.logo-name{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:4px;color:var(--green);text-shadow:0 0 30px rgba(0,255,135,.4);}
+.logo-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
+.headline{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;line-height:1.15;color:var(--text);}
+.headline em{font-style:normal;color:var(--green);}
+.sub{font-size:13px;color:var(--muted);line-height:1.7;max-width:270px;margin-top:14px;}
+.feats{display:flex;flex-direction:column;gap:11px;margin-top:28px;}
+.feat{display:flex;align-items:center;gap:11px;font-size:12.5px;color:var(--muted);}
+.fdot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);flex-shrink:0;}
+.stats{display:flex;gap:28px;}
+.stat .val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--green);}
+.stat .lbl{font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;}
+.right{width:380px;background:var(--surface);padding:52px 36px;display:flex;flex-direction:column;justify-content:center;border-left:1px solid var(--border);position:relative;}
+.right::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:.25;}
+.form-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--text);}
+.form-sub{font-size:12.5px;color:var(--muted);margin-top:4px;margin-bottom:30px;}
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--faint);padding:4px;border-radius:11px;border:1px solid var(--border);margin-bottom:24px;}
+.rb{padding:10px 6px;border-radius:8px;border:none;background:transparent;color:var(--muted);font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;text-transform:uppercase;}
+.rb.active{background:var(--green);color:#020c06;box-shadow:0 4px 20px rgba(0,255,135,.3);}
+.fields{display:flex;flex-direction:column;gap:14px;margin-bottom:22px;}
+.field{display:flex;flex-direction:column;gap:7px;}
+.field label{font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:600;font-family:'JetBrains Mono',monospace;}
+.field input{background:var(--faint);border:1px solid var(--border);border-radius:9px;padding:12px 15px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:13.5px;outline:none;transition:all .2s;}
+.field input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(0,255,135,.09);}
+.field input::placeholder{color:var(--muted);}
+.err{color:#ff3b5c;font-size:12px;text-align:center;padding:9px;background:rgba(255,59,92,.07);border:1px solid rgba(255,59,92,.15);border-radius:8px;display:none;margin-bottom:12px;}
+.err.show{display:block;}
+.btn{width:100%;padding:14px;background:var(--green);color:#020c06;border:none;border-radius:9px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;cursor:pointer;transition:all .22s;margin-bottom:18px;}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,255,135,.4);}
+.btn:active{transform:translateY(0);}
+.btn.loading{opacity:.6;pointer-events:none;}
+.demo{background:var(--faint);border:1px solid var(--border);border-radius:10px;padding:13px 14px;}
+.demo-hd{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-bottom:9px;}
+.demo-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:all .2s;}
+.demo-row:last-child{border:none;padding-bottom:0;}
+.demo-row:hover .dc{color:var(--green);}
+.dc{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);transition:color .2s;}
+.badge{font-size:9.5px;padding:2px 8px;border-radius:4px;font-weight:600;}
+.adm{background:rgba(184,255,0,.1);color:var(--lime);}
+.usr{background:rgba(0,255,135,.1);color:var(--green);}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="glow g1"></div><div class="glow g2"></div>
+<div class="pt" id="pt"></div>
+<div class="card">
+  <div class="left">
+    <div class="logo">
+      <div class="logo-box">🌿</div>
+      <div><div class="logo-name">AGROCHAIN</div><div class="logo-sub">Smart Agriculture Platform</div></div>
+    </div>
+    <div>
+      <div class="headline">Agriculture<br>Intelligente<br><em>&amp; Connectée</em></div>
+      <p class="sub">Plateforme IoT de supervision agricole en temps réel avec blockchain et intelligence artificielle.</p>
+      <div class="feats">
+        <div class="feat"><div class="fdot"></div>Capteurs IoT ESP32 en temps réel</div>
+        <div class="feat"><div class="fdot"></div>Traçabilité blockchain SHA-256</div>
+        <div class="feat"><div class="fdot"></div>IA détection santé des plantes</div>
+        <div class="feat"><div class="fdot"></div>Contrôle automatique irrigation</div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="val">9+</div><div class="lbl">Capteurs</div></div>
+      <div class="stat"><div class="val">RTL</div><div class="lbl">Live Data</div></div>
+      <div class="stat"><div class="val">SHA</div><div class="lbl">Blockchain</div></div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="form-title">Connexion</div>
+    <div class="form-sub">Accédez à votre tableau de bord</div>
+    <div class="roles">
+      <button class="rb active" id="tA" onclick="setRole('admin')">👑 Admin</button>
+      <button class="rb" id="tU" onclick="setRole('user')">🌱 Utilisateur</button>
+    </div>
+    <div class="fields">
+      <div class="field"><label>Email</label><input type="email" id="email" placeholder="admin@agrochain.tn"/></div>
+      <div class="field"><label>Mot de passe</label><input type="password" id="pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()"/></div>
+    </div>
+    <div class="err" id="err">❌ Email ou mot de passe incorrect</div>
+    <button class="btn" id="btn" onclick="login()">Se Connecter →</button>
+    <div class="demo">
+      <div class="demo-hd">Comptes de démonstration</div>
+      <div class="demo-row" onclick="fill('admin@agrochain.tn','admin123','admin')">
+        <span class="dc">admin@agrochain.tn / admin123</span><span class="badge adm">ADMIN</span>
+      </div>
+      <div class="demo-row" onclick="fill('user@agrochain.tn','farm123','user')">
+        <span class="dc">user@agrochain.tn / farm123</span><span class="badge usr">USER</span>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const pt=document.getElementById('pt');
+for(let i=0;i<18;i++){const p=document.createElement('div');p.className='p';p.style.cssText=`left:${Math.random()*100}%;animation-duration:${8+Math.random()*14}s;animation-delay:${Math.random()*10}s;`;pt.appendChild(p);}
+const ACC={'admin@agrochain.tn':{pass:'admin123',role:'admin'},'user@agrochain.tn':{pass:'farm123',role:'user'}};
+let role='admin';
+function setRole(r){role=r;document.getElementById('tA').className='rb'+(r==='admin'?' active':'');document.getElementById('tU').className='rb'+(r==='user'?' active':'');document.getElementById('email').placeholder=r==='admin'?'admin@agrochain.tn':'user@agrochain.tn';}
+function fill(e,p,r){document.getElementById('email').value=e;document.getElementById('pass').value=p;setRole(r);}
+function login(){
+  const e=document.getElementById('email').value.trim(),p=document.getElementById('pass').value;
+  const err=document.getElementById('err'),btn=document.getElementById('btn');
+  err.classList.remove('show');btn.textContent='Connexion...';btn.classList.add('loading');
+  setTimeout(()=>{
+    const a=ACC[e];
+    if(a&&a.pass===p&&a.role===role){localStorage.setItem('ag_role',a.role);localStorage.setItem('ag_email',e);window.location.href=a.role==='admin'?'admin.html':'user.html';}
+    else{err.classList.add('show');btn.textContent='Se Connecter →';btn.classList.remove('loading');}
+  },700);
+}
+</script>
+</body>
+</html>

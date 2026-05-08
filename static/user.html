@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroChain — Ma Ferme</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020c06;--surface:#061410;--s2:#071812;
+  --border:#0d2a18;--border2:#122e1e;
+  --green:#00ff87;--lime:#b8ff00;--teal:#00e5ff;
+  --gold:#ffb800;--red:#ff3b5c;--purple:#b87fff;
+  --text:#c8ffe0;--muted:#3a6b50;--faint:#081a10;
+  --mono:'JetBrains Mono',monospace;
+  --display:'Syne',sans-serif;
+  --body:'Space Grotesk',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);font-family:var(--body);color:var(--text);min-height:100vh;display:flex;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;flex-shrink:0;}
+.sb-logo{padding:22px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.sb-icon{width:38px;height:38px;border:1.5px solid var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(0,255,135,.07);animation:glow 3s ease-in-out infinite;}
+@keyframes glow{0%,100%{box-shadow:0 0 15px rgba(0,255,135,.1);}50%{box-shadow:0 0 35px rgba(0,255,135,.3);}}
+.sb-brand{font-family:var(--display);font-size:15px;font-weight:800;letter-spacing:3px;color:var(--green);}
+.sb-role{font-size:9px;color:var(--muted);letter-spacing:1.5px;font-family:var(--mono);}
+.sb-nav{flex:1;padding:16px 12px;display:flex;flex-direction:column;gap:4px;overflow-y:auto;}
+.nav-lbl{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:var(--mono);padding:12px 8px 6px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;cursor:pointer;transition:all .2s;font-size:13px;color:var(--muted);border:1px solid transparent;}
+.nav-item:hover{background:rgba(0,255,135,.05);color:var(--text);border-color:var(--border);}
+.nav-item.active{background:rgba(0,255,135,.1);color:var(--green);border-color:rgba(0,255,135,.2);}
+.nav-icon{font-size:15px;width:20px;text-align:center;}
+.sb-footer{padding:14px;border-top:1px solid var(--border);}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--teal));display:flex;align-items:center;justify-content:center;font-size:13px;color:#020c06;font-weight:700;}
+.logout-btn{margin-top:8px;width:100%;padding:8px;background:rgba(255,59,92,.08);border:1px solid rgba(255,59,92,.15);border-radius:8px;color:var(--red);font-size:11px;cursor:pointer;font-family:var(--body);transition:all .2s;}
+.logout-btn:hover{background:rgba(255,59,92,.18);}
+
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;}
+.topbar{padding:18px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:100;}
+.page-title{font-family:var(--display);font-size:19px;font-weight:800;color:var(--text);}
+.page-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.ws-badge{display:flex;align-items:center;gap:7px;padding:6px 14px;border-radius:20px;font-size:11px;font-family:var(--mono);background:var(--faint);border:1px solid var(--border);}
+.ws-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);transition:all .3s;}
+.ws-dot.on{background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.4;}}
+.content{padding:24px 28px;}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;transition:border-color .3s;}
+.card:hover{border-color:var(--border2);}
+.card-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);}
+.card-title{font-family:var(--display);font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;}
+.live-tag{font-size:9px;font-family:var(--mono);padding:3px 8px;border-radius:5px;background:rgba(0,255,135,.08);color:var(--green);letter-spacing:1px;animation:blink 2s infinite;}
+
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;transition:all .3s;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent,var(--green)),transparent);opacity:.7;}
+.kpi:hover{border-color:var(--border2);transform:translateY(-1px);}
+.kpi-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+.kpi-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(255,255,255,.04);border:1px solid var(--border);}
+.kpi-badge{font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:5px;}
+.ok{background:rgba(0,255,135,.1);color:var(--green);}
+.warn{background:rgba(255,184,0,.1);color:var(--gold);}
+.crit{background:rgba(255,59,92,.1);color:var(--red);}
+.kpi-val{font-family:var(--display);font-size:38px;font-weight:800;line-height:1;transition:all .5s;}
+.kpi-unit{font-size:14px;font-weight:400;color:var(--muted);font-family:var(--body);margin-left:3px;}
+.kpi-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-top:6px;}
+
+/* ── PUMP ── */
+.pump-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;display:flex;align-items:center;gap:20px;transition:border-color .4s;}
+.pump-card.on{border-color:rgba(0,255,135,.3);background:rgba(0,255,135,.03);}
+.pump-orb{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;border:2px solid var(--border);background:var(--faint);transition:all .5s;flex-shrink:0;}
+.pump-orb.on{border-color:var(--green);background:rgba(0,255,135,.08);box-shadow:0 0 30px rgba(0,255,135,.2);animation:breathe 2s ease-in-out infinite;}
+@keyframes breathe{0%,100%{box-shadow:0 0 20px rgba(0,255,135,.15);}50%{box-shadow:0 0 45px rgba(0,255,135,.4);}}
+.pump-info{flex:1;}
+.pump-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;}
+.pump-status{font-family:var(--display);font-size:26px;font-weight:800;transition:color .4s;}
+.pump-status.on{color:var(--green);}
+.pump-status.off{color:var(--muted);}
+.pump-flow{text-align:center;padding:14px 20px;background:var(--faint);border:1px solid var(--border);border-radius:10px;flex-shrink:0;}
+.pump-flow-val{font-family:var(--mono);font-size:20px;font-weight:600;color:var(--teal);}
+.pump-flow-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+.pump-btns{display:flex;gap:10px;flex-shrink:0;}
+.btn-on{padding:12px 20px;background:var(--green);color:#020c06;border:none;border-radius:10px;font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:1.5px;cursor:pointer;transition:all .2s;}
+.btn-on:hover{box-shadow:0 8px 24px rgba(0,255,135,.35);transform:translateY(-1px);}
+.btn-off{padding:12px 20px;background:rgba(255,59,92,.1);color:var(--red);border:1px solid rgba(255,59,92,.2);border-radius:10px;font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:1.5px;cursor:pointer;transition:all .2s;}
+.btn-off:hover{background:rgba(255,59,92,.2);}
+
+/* ── SENSOR BARS ── */
+.sensor-row{margin-bottom:14px;}
+.sensor-top{display:flex;justify-content:space-between;margin-bottom:6px;}
+.sensor-name{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;display:flex;align-items:center;gap:6px;}
+.s-dot{width:6px;height:6px;border-radius:50%;}
+.sensor-val{font-family:var(--mono);font-size:12px;color:var(--text);}
+.sensor-track{height:3px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;}
+.sensor-fill{height:100%;border-radius:3px;transition:width 1s cubic-bezier(.4,0,.2,1);position:relative;}
+.sensor-fill::after{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);width:7px;height:7px;border-radius:50%;background:inherit;box-shadow:0 0 6px currentColor;filter:brightness(1.5);}
+
+/* ── CAMERA ── */
+.camera-feed{width:100%;height:100%;min-height:350px;background:var(--faint);border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;border:1px solid var(--border);}
+.camera-feed img{width:100%;height:100%;object-fit:cover;border-radius:0;}
+.camera-overlay{position:absolute;bottom:8px;left:8px;right:8px;display:flex;justify-content:space-between;align-items:center;}
+.cam-tag{font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:5px;background:rgba(0,0,0,.6);color:var(--green);backdrop-filter:blur(4px);}
+
+/* ── HEALTH CIRCLES ── */
+.health-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.health-item{background:var(--faint);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;transition:border-color .3s;}
+.health-item:hover{border-color:var(--border2);}
+.health-circle{width:60px;height:60px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:600;border:2px solid;}
+.health-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+
+/* ── AI AGENT ── */
+.agent-wrap{background:linear-gradient(135deg,#040f07,#071812);border:1px solid rgba(0,229,255,.2);border-radius:14px;margin-bottom:20px;overflow:hidden;}
+.agent-header{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(0,229,255,.1);}
+.agent-brain{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--green));display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 20px rgba(0,229,255,.3);animation:glow 3s infinite;}
+.agent-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid rgba(0,229,255,.1);}
+.agent-stat{padding:10px 16px;text-align:center;border-right:1px solid rgba(0,229,255,.08);}
+.agent-stat:last-child{border-right:none;}
+.agent-stat-lbl{font-family:var(--mono);font-size:8px;color:var(--muted);letter-spacing:1.5px;margin-bottom:3px;}
+.agent-stat-val{font-size:12px;color:var(--teal);font-weight:600;}
+.agent-body{display:grid;grid-template-columns:1.2fr 1fr;gap:0;}
+.agent-chat{padding:16px;border-right:1px solid rgba(0,229,255,.08);}
+.agent-chat-feed{max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-right:4px;}
+.agent-chat-feed::-webkit-scrollbar{width:3px;}
+.agent-chat-feed::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+.agent-input{display:flex;gap:8px;margin-top:10px;}
+.agent-input input{flex:1;background:var(--faint);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:11px;font-family:var(--body);outline:none;transition:border-color .2s;}
+.agent-input input:focus{border-color:rgba(0,229,255,.3);}
+.agent-input button{padding:9px 14px;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.2);border-radius:8px;color:var(--teal);font-size:13px;cursor:pointer;transition:all .2s;}
+.agent-input button:hover{background:rgba(0,229,255,.2);}
+.agent-report{padding:16px;}
+.report-feed{max-height:300px;overflow-y:auto;}
+.report-line{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.report-time{font-family:var(--mono);font-size:9px;color:var(--muted);flex-shrink:0;margin-top:2px;}
+.report-text{font-size:11px;color:var(--muted);line-height:1.5;}
+
+/* ── ALERTS ── */
+.alert-feed{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;}
+.alert-item{padding:10px 12px;border-radius:8px;border:1px solid;font-size:11.5px;animation:slideIn .3s ease;}
+@keyframes slideIn{from{transform:translateY(-6px);opacity:0;}to{transform:none;opacity:1;}}
+.alert-item.crit{background:rgba(255,59,92,.06);border-color:rgba(255,59,92,.2);color:#ff8888;}
+.alert-item.warn{background:rgba(255,184,0,.06);border-color:rgba(255,184,0,.2);color:var(--gold);}
+.alert-item.info{background:rgba(0,255,135,.04);border-color:rgba(0,255,135,.15);color:#80ffb8;}
+.alert-time{font-family:var(--mono);font-size:9px;opacity:.5;margin-top:2px;}
+
+/* ── MINI CARDS ── */
+.mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+.mini{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;transition:all .2s;}
+.mini:hover{border-color:var(--border2);transform:translateY(-1px);}
+.mini-icon{font-size:22px;margin-bottom:8px;}
+.mini-val{font-family:var(--display);font-size:22px;font-weight:700;margin-bottom:4px;}
+.mini-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;}
+
+/* ── GRID LAYOUTS ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.grid-3-1{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px;}
+
+/* ── ALERT BANNER ── */
+.alert-banner{display:none;align-items:center;gap:12px;padding:12px 18px;border-radius:10px;margin-bottom:20px;font-size:12px;font-weight:500;}
+.alert-banner.show{display:flex;}
+.alert-banner.danger{background:rgba(255,59,92,.08);border:1px solid rgba(255,59,92,.2);color:#ff8888;}
+
+/* ── BLOCKCHAIN ── */
+.block-feed{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;}
+.block-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--faint);border:1px solid var(--border);border-radius:7px;font-family:var(--mono);font-size:10px;transition:border-color .2s;}
+.block-item:first-child{border-color:rgba(0,255,135,.2);}
+.block-num{color:var(--green);min-width:22px;font-size:11px;}
+.block-hash{color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.block-time{color:var(--muted);font-size:9px;}
+
+@media(max-width:1100px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .grid-2{grid-template-columns:1fr;}
+  .agent-body{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-icon">🌿</div>
+    <div>
+      <div class="sb-brand">AGRO</div>
+      <div class="sb-role">UTILISATEUR</div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-lbl">Navigation</div>
+    <div class="nav-item active" onclick="scrollTo(0,0)"><span class="nav-icon">🏠</span>Tableau de Bord</div>
+    <div class="nav-item" onclick="document.getElementById('sec-sensors').scrollIntoView({behavior:'smooth'})"><span class="nav-icon">📡</span>Capteurs</div>
+    <div class="nav-item" onclick="document.getElementById('sec-camera').scrollIntoView({behavior:'smooth'})"><span class="nav-icon">📷</span>Caméra IA</div>
+    <div class="nav-item" onclick="document.getElementById('sec-agent').scrollIntoView({behavior:'smooth'})"><span class="nav-icon">🤖</span>Agent IA</div>
+    <div class="nav-item" onclick="document.getElementById('sec-alerts').scrollIntoView({behavior:'smooth'})"><span class="nav-icon">🔔</span>Alertes</div>
+    <div class="nav-item" onclick="document.getElementById('sec-chain').scrollIntoView({behavior:'smooth'})"><span class="nav-icon">🔗</span>Blockchain</div>
+  </nav>
+  <div class="sb-footer">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <div class="avatar" id="userInitial">U</div>
+      <div><div style="font-size:12px;font-weight:600" id="userName">Utilisateur</div><div style="font-size:10px;color:var(--muted)">Agriculteur</div></div>
+    </div>
+    <button class="logout-btn" onclick="logout()">⏻ Déconnexion</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <div class="page-title" id="pageTitle">Tableau de Bord</div>
+      <div class="page-sub" id="pageDate"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="ws-badge">
+        <div class="ws-dot" id="wsDot"></div>
+        <span id="wsStatus" style="color:var(--muted)">Connexion...</span>
+      </div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted)" id="clock"></div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ALERT BANNER -->
+    <div class="alert-banner" id="alertBanner">
+      <span>⚠️</span><span id="alertBannerText"></span>
+    </div>
+
+    <!-- KPI ROW -->
+    <div class="kpi-grid">
+      <div class="kpi" style="--accent:#ffb800">
+        <div class="kpi-top"><div class="kpi-icon">🌡️</div><div class="kpi-badge ok" id="b-temp">OK</div></div>
+        <div><span class="kpi-val" id="kv-temp" style="color:#ffb800">--</span><span class="kpi-unit">°C</span></div>
+        <div class="kpi-label">Température</div>
+      </div>
+      <div class="kpi" style="--accent:var(--teal)">
+        <div class="kpi-top"><div class="kpi-icon">💧</div><div class="kpi-badge ok" id="b-hum">OK</div></div>
+        <div><span class="kpi-val" id="kv-hum" style="color:var(--teal)">--</span><span class="kpi-unit">%</span></div>
+        <div class="kpi-label">Humidité Air</div>
+      </div>
+      <div class="kpi" style="--accent:var(--green)">
+        <div class="kpi-top"><div class="kpi-icon">🌱</div><div class="kpi-badge ok" id="b-soil">OK</div></div>
+        <div><span class="kpi-val" id="kv-soil" style="color:var(--green)">--</span><span class="kpi-unit">%</span></div>
+        <div class="kpi-label">Humidité Sol</div>
+      </div>
+      <div class="kpi" style="--accent:var(--purple)">
+        <div class="kpi-top"><div class="kpi-icon">💨</div><div class="kpi-badge ok" id="b-gas">OK</div></div>
+        <div><span class="kpi-val" id="kv-gas" style="color:var(--purple)">--</span><span class="kpi-unit">ppm</span></div>
+        <div class="kpi-label">Qualité Air</div>
+      </div>
+    </div>
+
+    <!-- PUMP -->
+    <div class="pump-card" id="pumpCard">
+      <div class="pump-orb off" id="pumpOrb">💧</div>
+      <div class="pump-info">
+        <div class="pump-lbl">Système d'Irrigation</div>
+        <div class="pump-status off" id="pumpStatus">INACTIVE</div>
+      </div>
+      <div class="pump-flow">
+        <div class="pump-flow-val" id="pumpFlow">0.00</div>
+        <div class="pump-flow-lbl">L / min</div>
+      </div>
+      <div class="pump-btns">
+        <button class="btn-on" onclick="controlPump('on')">▶ DÉMARRER</button>
+        <button class="btn-off" onclick="controlPump('off')">■ ARRÊTER</button>
+      </div>
+    </div>
+
+    <!-- SENSORS + CAMERA/HEALTH -->
+    <div style="display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:14px" id="sec-sensors">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>📡</span> Capteurs Environnement</div>
+          <span class="live-tag">● LIVE</span>
+        </div>
+        <div style="padding:16px 20px">
+          <div class="sensor-row">
+            <div class="sensor-top"><div class="sensor-name"><div class="s-dot" style="background:#ffb800;box-shadow:0 0 5px #ffb800"></div>Température</div><div class="sensor-val" id="sv-temp">-- °C</div></div>
+            <div class="sensor-track"><div class="sensor-fill" id="sf-temp" style="width:0%;background:linear-gradient(90deg,#ffb800,#ff6b00)"></div></div>
+          </div>
+          <div class="sensor-row">
+            <div class="sensor-top"><div class="sensor-name"><div class="s-dot" style="background:var(--teal);box-shadow:0 0 5px var(--teal)"></div>Humidité Air</div><div class="sensor-val" id="sv-hum">-- %</div></div>
+            <div class="sensor-track"><div class="sensor-fill" id="sf-hum" style="width:0%;background:linear-gradient(90deg,var(--teal),var(--green))"></div></div>
+          </div>
+          <div class="sensor-row">
+            <div class="sensor-top"><div class="sensor-name"><div class="s-dot" style="background:var(--green);box-shadow:0 0 5px var(--green)"></div>Humidité Sol</div><div class="sensor-val" id="sv-soil">-- %</div></div>
+            <div class="sensor-track"><div class="sensor-fill" id="sf-soil" style="width:0%;background:linear-gradient(90deg,var(--green),var(--lime))"></div></div>
+          </div>
+          <div class="sensor-row">
+            <div class="sensor-top"><div class="sensor-name"><div class="s-dot" style="background:var(--purple);box-shadow:0 0 5px var(--purple)"></div>Gaz MQ135</div><div class="sensor-val" id="sv-gas">-- ppm</div></div>
+            <div class="sensor-track"><div class="sensor-fill" id="sf-gas" style="width:0%;background:linear-gradient(90deg,var(--purple),#7b2fff)"></div></div>
+          </div>
+          <div class="sensor-row">
+            <div class="sensor-top"><div class="sensor-name"><div class="s-dot" style="background:var(--teal);box-shadow:0 0 5px var(--teal)"></div>Débit Eau</div><div class="sensor-val" id="sv-flow">-- L/min</div></div>
+            <div class="sensor-track"><div class="sensor-fill" id="sf-flow" style="width:0%;background:linear-gradient(90deg,var(--teal),var(--green))"></div></div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- GRAPHIQUES HISTORIQUE -->
+      <div class="card" style="margin-top:16px" id="sec-charts">
+        <div class="card-header">
+          <div class="card-title"><span>📈</span> Historique des données</div>
+          <span class="live-tag">● LIVE</span>
+        </div>
+        <div style="padding:16px 20px">
+          <canvas id="chartTemp" height="50"></canvas>
+          <div style="margin-top:8px">
+          <canvas id="chartSoil" height="50"></canvas>
+          </div>
+          <div style="margin-top:8px">
+          <canvas id="chartGas" height="50"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- CAMERA + HEALTH -->
+      <div style="display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:14px">
+        <div class="card" id="sec-camera">
+          <div class="card-header">
+            <div class="card-title"><span>📷</span> Caméra Live — Plantes</div>
+            <span class="live-tag">● IA</span>
+          </div>
+          <div style="padding:0">
+            <div class="camera-feed" style="border-radius:0 0 12px 12px;border:none">
+              <img id="cameraImg" src="" alt="Camera" style="display:none" onerror="this.style.display='none';document.getElementById('camPlaceholder').style.display='flex'"/>
+              <div id="camPlaceholder" style="display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--muted)">
+                <span style="font-size:32px">📷</span>
+                <span style="font-size:11px;font-family:var(--mono)">Caméra non connectée</span>
+              </div>
+              <div class="camera-overlay">
+                <span class="cam-tag">● LIVE</span>
+                <span class="cam-tag" id="camHealth">Santé: --%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🤖</span> Santé des Plantes</div>
+            <span class="live-tag">● IA</span>
+          </div>
+          <div style="padding:12px 16px">
+            <div class="health-grid">
+              <div class="health-item">
+                <div class="health-circle" id="hc-health" style="border-color:rgba(0,255,135,.3);color:var(--green)"><span id="hv-health">0%</span></div>
+                <div class="health-lbl">🟢 Santé</div>
+              </div>
+              <div class="health-item">
+                <div class="health-circle" id="hc-stress" style="border-color:rgba(255,184,0,.3);color:var(--gold)"><span id="hv-stress">0%</span></div>
+                <div class="health-lbl">🟡 Stress</div>
+              </div>
+              <div class="health-item">
+                <div class="health-circle" id="hc-disease" style="border-color:rgba(255,59,92,.3);color:var(--red)"><span id="hv-disease">0%</span></div>
+                <div class="health-lbl">🔴 Maladie</div>
+              </div>
+              <div class="health-item">
+                <div class="health-circle" id="hc-anomaly" style="border-color:rgba(184,127,255,.3);color:var(--purple)"><span id="hv-anomaly">0%</span></div>
+                <div class="health-lbl">🟣 Anomalie</div>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <!-- MINI CARDS -->
+    <div class="mini-grid">
+      <div class="mini">
+        <div class="mini-icon">🔥</div>
+        <div class="mini-val" id="mv-flame" style="color:var(--red)">--</div>
+        <div class="mini-lbl">Détecteur Flamme</div>
+      </div>
+      <div class="mini">
+        <div class="mini-icon">📏</div>
+        <div class="mini-val" id="mv-dist" style="color:var(--teal)">-- cm</div>
+        <div class="mini-lbl">Niveau Réservoir</div>
+      </div>
+      <div class="mini">
+        <div class="mini-icon">☀️</div>
+        <div class="mini-val" id="mv-ldr" style="color:var(--gold)">--</div>
+        <div class="mini-lbl">Luminosité LDR</div>
+      </div>
+    </div>
+
+    <!-- AI AGENT -->
+    <div class="agent-wrap" id="sec-agent">
+      <div class="agent-header">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div class="agent-brain">🧠</div>
+          <div>
+            <div style="font-family:var(--display);font-size:17px;font-weight:800">AgroChain AI Agent</div>
+            <div style="font-size:10px;color:var(--teal);font-family:var(--mono)">Claude Sonnet · Decisions autonomes</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div style="display:flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(0,255,135,.06);border:1px solid rgba(0,255,135,.15);border-radius:20px">
+            <div style="width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2s infinite"></div>
+            <span style="font-family:var(--mono);font-size:10px;color:var(--green)">ACTIF</span>
+          </div>
+          <button onclick="askAgent()" style="padding:8px 16px;background:linear-gradient(135deg,var(--teal),var(--green));border:none;border-radius:9px;color:#020c06;font-family:var(--display);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px">⚡ ANALYSER</button>
+        </div>
+      </div>
+      <div class="agent-stats">
+        <div class="agent-stat"><div class="agent-stat-lbl">MODELE</div><div class="agent-stat-val">Claude Sonnet</div></div>
+        <div class="agent-stat"><div class="agent-stat-lbl">DECISIONS</div><div class="agent-stat-val" id="agentCount">0</div></div>
+        <div class="agent-stat"><div class="agent-stat-lbl">DERNIERE</div><div class="agent-stat-val" id="agentLastTime">--:--</div></div>
+        <div class="agent-stat"><div class="agent-stat-lbl">POMPE AUTO</div><div class="agent-stat-val" id="agentPumpCount">0x</div></div>
+      </div>
+      <div class="agent-body">
+        <div class="agent-chat">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;font-family:var(--mono)">💬 Decisions & Raisonnements</div>
+          <div class="agent-chat-feed" id="agentChat">
+            <div style="text-align:center;padding:24px;color:var(--muted);font-size:12px">🧠 En attente de l'analyse...</div>
+          </div>
+          <div class="agent-input">
+            <input id="agentQuestion" type="text" placeholder="Pose une question a l'agent..."/>
+            <button onclick="askAgent(document.getElementById('agentQuestion').value)">➤</button>
+          </div>
+        </div>
+        <div class="agent-report">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;font-family:var(--mono)">📋 Rapport Quotidien</div>
+          <div class="report-feed" id="agentReport">
+            <div style="text-align:center;padding:20px;color:var(--muted);font-size:11px">Lancer l'analyse...</div>
+          </div>
+          <button onclick="generateReport()" style="width:100%;margin-top:10px;padding:8px;background:rgba(255,184,0,.06);border:1px solid rgba(255,184,0,.15);border-radius:8px;color:var(--gold);font-size:11px;font-family:var(--body);cursor:pointer;letter-spacing:1px">📊 GENERER RAPPORT</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERTS + BLOCKCHAIN -->
+    <div class="grid-2">
+      <div class="card" id="sec-alerts">
+        <div class="card-header">
+          <div class="card-title"><span>🔔</span> Journal des Alertes</div>
+        </div>
+        <div style="padding:14px 16px">
+          <div class="alert-feed" id="alertFeed">
+            <div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">✅ Aucune alerte</div>
+          </div>
+        </div>
+      </div>
+      <div class="card" id="sec-chain">
+        <div class="card-header">
+          <div class="card-title"><span>🔗</span> Blockchain Ledger</div>
+          <span style="font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:5px;background:rgba(184,127,255,.08);color:var(--purple)">SHA-256</span>
+        </div>
+        <div style="padding:14px 16px">
+          <div class="block-feed" id="chainFeed">
+            <div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Chargement...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Auth
+if(!localStorage.getItem('ag_role')||localStorage.getItem('ag_role')!=='user') window.location.href='login.html';
+const email=localStorage.getItem('ag_email')||'user@agrochain.tn';
+const name=email.split('@')[0];
+document.getElementById('userName').textContent=name;
+document.getElementById('userInitial').textContent=name[0].toUpperCase();
+
+// Date
+const now=new Date();
+document.getElementById('pageDate').textContent=now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('fr-FR');},1000);
+function logout(){localStorage.clear();window.location.href='login.html';}
+
+const PI_IP=window.location.hostname+(window.location.port?':'+window.location.port:'');
+const USE_NGROK=true;
+let state={t:0,h:0,s:0,g:0,flame:false,pump:false,distance:0,ai_health:0,ai_stress:0,ai_disease:0,ai_anomaly:0,f:0,l:0};
+let alerts=[];
+let blockchain=[];
+
+// WebSocket
+let ws,wsRetry=0;
+function connectWS(){
+  try{
+    ws=new WebSocket(`${window.location.protocol==="https:"?"wss":"ws"}://${PI_IP}/ws`);
+    ws.onopen=()=>{document.getElementById('wsDot').className='ws-dot on';document.getElementById('wsStatus').textContent='Connecte';wsRetry=0;};
+    ws.onmessage=(e)=>{try{const d=JSON.parse(e.data);state=Object.assign(state,d);updateAll();}catch(err){}};
+    ws.onclose=()=>{document.getElementById('wsDot').className='ws-dot';document.getElementById('wsStatus').textContent='Reconnexion...';wsRetry++;setTimeout(connectWS,Math.min(wsRetry*2000,10000));};
+  }catch(e){}
+}
+connectWS();
+
+// Demo simulation
+setInterval(()=>{
+  if(!ws||ws.readyState!==1){
+    const t2=Date.now()/1000;
+    state.t=23+Math.sin(t2/12)*5;
+    state.h=60+Math.sin(t2/9)*12;
+    state.s=48+Math.cos(t2/14)*18;
+    updateAll();
+  }
+},1500);
+
+function updateAll(){
+  addToHistory(state.t, state.s, state.g);
+  setKPI('temp',state.t.toFixed(1),state.t>35?'crit':state.t>30?'warn':'ok','#ffb800');
+  setKPI('hum',state.h.toFixed(0),state.h<30?'warn':state.h>85?'warn':'ok','var(--teal)');
+  setKPI('soil',state.s.toFixed(0),state.s<25?'crit':state.s<35?'warn':'ok','var(--green)');
+  setKPI('gas',Math.round(state.g),state.g>400?'crit':state.g>280?'warn':'ok','var(--purple)');
+  setBar('temp',state.t.toFixed(1)+' C',Math.min(100,(state.t/50)*100));
+  setBar('hum',state.h.toFixed(0)+' %',state.h);
+  setBar('soil',state.s.toFixed(0)+' %',state.s);
+  setBar('gas',Math.round(state.g)+' ppm',Math.min(100,(state.g/600)*100));
+  setBar('flow',state.f.toFixed(2)+' L/min',Math.min(100,(state.f/10)*100));
+  const fl=document.getElementById('mv-flame');
+  fl.textContent=state.flame?'DETECTE':'Aucune';
+  fl.style.color=state.flame?'var(--red)':'var(--green)';
+  document.getElementById('mv-dist').textContent=state.distance.toFixed(0)+' cm';
+  document.getElementById('mv-ldr').textContent=Math.round(state.l||0);
+  const on=state.pump;
+  document.getElementById('pumpOrb').className='pump-orb '+(on?'on':'off');
+  const ps=document.getElementById('pumpStatus');
+  ps.textContent=on?'EN MARCHE':'INACTIVE';
+  ps.className='pump-status '+(on?'on':'off');
+  document.getElementById('pumpCard').className='pump-card'+(on?' on':'');
+  document.getElementById('pumpFlow').textContent=state.f.toFixed(2);
+  setHealth('health',state.ai_health,'0,255,135');
+  setHealth('stress',state.ai_stress,'255,184,0');
+  setHealth('disease',state.ai_disease,'255,59,92');
+  setHealth('anomaly',state.ai_anomaly,'184,127,255');
+  document.getElementById('camHealth').textContent='Sante: '+Math.round(state.ai_health||0)+'%';
+  checkAlerts();
+}
+
+function setKPI(id,val,status,color){
+  document.getElementById('kv-'+id).textContent=val;
+  const b=document.getElementById('b-'+id);
+  b.textContent=status==='ok'?'OK':status==='warn'?'ATTEN':'CRIT';
+  b.className='kpi-badge '+status;
+}
+function setBar(id,val,pct){
+  document.getElementById('sv-'+id).textContent=val;
+  document.getElementById('sf-'+id).style.width=Math.min(100,Math.max(0,pct))+'%';
+}
+function setHealth(id,val,rgb){
+  const pct=Math.min(100,Math.max(0,val));
+  document.getElementById('hv-'+id).textContent=Math.round(pct)+'%';
+  const c=document.getElementById('hc-'+id);
+  c.style.background=`rgba(${rgb},${0.08+pct/100*0.3})`;
+  c.style.borderColor=`rgba(${rgb},${0.15+pct/100*0.5})`;
+}
+
+// Load camera immediately on start
+(function loadCamNow(){
+  const img=document.getElementById('cameraImg');
+  const url=`${window.location.protocol}//${PI_IP}/snapshot?t=${Date.now()}`;
+  const tmp=new Image();
+  tmp.onload=()=>{img.src=url;img.style.display='block';document.getElementById('camPlaceholder').style.display='none';};
+  tmp.onerror=()=>{img.style.display='none';document.getElementById('camPlaceholder').style.display='flex';};
+  tmp.src=url;
+})();
+// Camera refresh
+setInterval(()=>{
+  const img=document.getElementById('cameraImg');
+  const url=`${window.location.protocol}//${PI_IP}/snapshot?t=${Date.now()}`;
+  const tmp=new Image();
+  tmp.onload=()=>{img.src=url;img.style.display='block';document.getElementById('camPlaceholder').style.display='none';};
+  tmp.onerror=()=>{img.style.display='none';document.getElementById('camPlaceholder').style.display='flex';};
+  tmp.src=url;
+},10000);
+
+// Pump control
+function controlPump(cmd){
+  state.pump=(cmd==='on');
+  updateAll();
+  fetch(`${window.location.protocol}//${PI_IP}/pump/${cmd}`,{method:'POST'}).catch(()=>{});
+  addAlert('info','Pompe '+(cmd==='on'?'demarree':'arretee')+' par utilisateur');
+}
+
+// Alerts
+function checkAlerts(){
+  if(state.flame&&!window._fa){window._fa=true;addAlert('crit','Flamme detectee !');}
+  if(!state.flame)window._fa=false;
+  if(state.t>35&&!window._ta){window._ta=true;addAlert('warn','Temperature elevee : '+state.t.toFixed(1)+'C');}
+  if(state.t<=35)window._ta=false;
+  if(state.s<25&&!window._sa){window._sa=true;addAlert('warn','Sol trop sec : '+state.s.toFixed(0)+'%');}
+  if(state.s>=25)window._sa=false;
+  if(state.g>400&&!window._ga){window._ga=true;addAlert('crit','Gaz dangereux : '+Math.round(state.g)+' ppm');}
+  if(state.g<=400)window._ga=false;
+}
+function addAlert(type,msg){
+  alerts.unshift({type,msg,time:new Date().toLocaleTimeString('fr-FR')});
+  if(alerts.length>30)alerts.pop();
+  renderAlerts();
+  if(type==='crit'){
+    const b=document.getElementById('alertBanner');
+    document.getElementById('alertBannerText').textContent=msg;
+    b.className='alert-banner show danger';
+    setTimeout(()=>b.className='alert-banner',8000);
+  }
+}
+function renderAlerts(){
+  const el=document.getElementById('alertFeed');
+  if(!alerts.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Aucune alerte</div>';return;}
+  el.innerHTML=alerts.map(a=>`<div class="alert-item ${a.type}"><div>${a.msg}</div><div class="alert-time">${a.time}</div></div>`).join('');
+}
+
+// Blockchain
+function loadChain(){
+  fetch(`${window.location.protocol}//${PI_IP}/blockchain`).then(r=>r.json()).then(data=>{blockchain=data;renderChain();}).catch(()=>{
+    if(!blockchain.length){for(let i=1;i<=5;i++)blockchain.push({index:i,hash:'0x'+Math.random().toString(16).substr(2,16),timestamp:new Date().toISOString()});renderChain();}
+  });
+}
+function renderChain(){
+  const el=document.getElementById('chainFeed');
+  el.innerHTML=blockchain.slice().reverse().slice(0,8).map(b=>`
+    <div class="block-item">
+      <div class="block-num">#${b.index}</div>
+      <div class="block-hash">${b.hash}</div>
+      <div class="block-time">${new Date(b.timestamp).toLocaleTimeString('fr-FR')}</div>
+    </div>`).join('');
+}
+loadChain();
+setInterval(loadChain,10000);
+
+// AI Agent
+let agentLog=[];
+let pumpAutoCount=0;
+let isThinking=false;
+
+function buildPrompt(userQuestion){
+  const q=userQuestion?`\nQuestion: "${userQuestion}"`:'';
+  return `Tu es AgroChain AI Agent, expert en agriculture intelligente. Reponds en JSON uniquement.
+Capteurs: Temp=${state.t.toFixed(1)}C, Humidite air=${state.h.toFixed(0)}%, Sol=${state.s.toFixed(0)}%, Gaz=${Math.round(state.g)}ppm, Flamme=${state.flame?'OUI':'Non'}, Reservoir=${state.distance.toFixed(0)}cm, Pompe=${state.pump?'ON':'OFF'}, Sante plantes=${Math.round(state.ai_health)}%, Maladie=${Math.round(state.ai_disease)}%${q}
+Reponds avec: {"action":"PUMP_ON"|"PUMP_OFF"|"NO_ACTION","alert":"NONE"|"INFO"|"WARNING"|"CRITICAL","message":"court message fr","analysis":"2-3 phrases expert agronome fr","recommendation":"conseil pratique fr","report_line":"une ligne rapport fr"}`;
+}
+
+async function callClaudeAPI(prompt){
+  try{
+    const res=await fetch(`${window.location.protocol}//${PI_IP}/agent/ask`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+    if(res.ok){const d=await res.json();if(d.action)return d;}
+  }catch(e){}
+  // Fallback smart rules
+  const soil=state.s,temp=state.t,gas=state.g;
+  if(state.flame) return {action:'NO_ACTION',alert:'CRITICAL',message:'Flamme detectee - danger!',analysis:`Flamme active detectee par capteur IR. Toutes operations suspendues. Temperature: ${temp.toFixed(1)}C.`,recommendation:'Verifier immediatement la source de chaleur.',report_line:`CRITIQUE: Flamme detectee`};
+  if(soil<28&&!state.rain) return {action:'PUMP_ON',alert:'INFO',message:`Sol a ${soil.toFixed(0)}% - irrigation demarree`,analysis:`Humidite sol a ${soil.toFixed(0)}%, sous le seuil critique de 30%. Pas de pluie detectee. Pompe activee automatiquement.`,recommendation:`Verifier le reservoir (${state.distance.toFixed(0)}cm) et surveiller le debit.`,report_line:`Irrigation auto - sol a ${soil.toFixed(0)}%`};
+  if(soil>72||state.rain) return {action:'PUMP_OFF',alert:'NONE',message:state.rain?'Pluie active - pompe arretee':`Sol sature a ${soil.toFixed(0)}%`,analysis:state.rain?`Pluie detectee. Irrigation suspendue pour economiser l eau.`:`Sol a ${soil.toFixed(0)}% - saturation. Arret pompe pour eviter surhydratation.`,recommendation:'Surveiller dans 2 heures.',report_line:`Pompe arretee - ${state.rain?'pluie':'sol sature'}`};
+  if(temp>35) return {action:'NO_ACTION',alert:'WARNING',message:`Chaleur: ${temp.toFixed(1)}C`,analysis:`Temperature a ${temp.toFixed(1)}C. Sol a ${soil.toFixed(0)}% - acceptable. Surveillance renforcee.`,recommendation:'Arrosage en soiree recommande.',report_line:`Alerte chaleur: ${temp.toFixed(1)}C`};
+  if(gas>350) return {action:'NO_ACTION',alert:'WARNING',message:`Gaz: ${Math.round(gas)}ppm`,analysis:`MQ135 detecte ${Math.round(gas)}ppm, au-dessus du seuil. Autres conditions normales.`,recommendation:'Ameliorer la ventilation.',report_line:`Qualite air: ${Math.round(gas)}ppm`};
+  return {action:'NO_ACTION',alert:'NONE',message:'Ferme en parfait etat',analysis:`Tous parametres optimaux. Sol ${soil.toFixed(0)}%, temp ${temp.toFixed(1)}C, gaz ${Math.round(gas)}ppm. Sante plantes ${Math.round(state.ai_health)}%.`,recommendation:'Conditions ideales. Surveillance habituelle suffisante.',report_line:`Conditions normales - ferme autonome`};
+}
+
+function addChatBubble(data,isUser=false,userText=''){
+  const chat=document.getElementById('agentChat');
+  if(chat.children.length===1&&chat.children[0].style.textAlign==='center')chat.innerHTML='';
+  if(isUser&&userText){
+    const b=document.createElement('div');
+    b.style.cssText='display:flex;justify-content:flex-end;margin-bottom:6px';
+    b.innerHTML=`<div style="background:rgba(0,255,135,.08);border:1px solid rgba(0,255,135,.15);border-radius:12px 12px 3px 12px;padding:9px 12px;max-width:75%;font-size:12px">${userText}</div>`;
+    chat.appendChild(b);
+  }
+  const ac=data.alert==='CRITICAL'?'var(--red)':data.alert==='WARNING'?'var(--gold)':data.alert==='INFO'?'var(--teal)':'var(--green)';
+  const dc=data.action==='PUMP_ON'?'var(--teal)':data.action==='PUMP_OFF'?'var(--red)':'var(--muted)';
+  const b=document.createElement('div');
+  b.style.cssText='display:flex;gap:8px;align-items:flex-start;margin-bottom:8px';
+  b.innerHTML=`<div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--green));display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px">🧠</div>
+    <div style="flex:1;background:var(--faint);border:1px solid var(--border);border-radius:3px 12px 12px 12px;padding:10px 12px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-family:var(--mono);font-size:10px;color:${dc};font-weight:600">${data.action.replace('_',' ')}</span>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--muted)">${new Date().toLocaleTimeString('fr-FR')}</span>
+      </div>
+      ${data.message?`<div style="font-size:12px;color:${ac};margin-bottom:6px;font-weight:500">${data.message}</div>`:''}
+      <div style="font-size:11.5px;color:var(--muted);line-height:1.6;margin-bottom:6px">${data.analysis}</div>
+      <div style="padding:7px 10px;background:rgba(0,255,135,.04);border-left:2px solid rgba(0,255,135,.3);font-size:11px;color:#80ffb8;font-style:italic">💡 ${data.recommendation}</div>
+    </div>`;
+  chat.appendChild(b);
+  chat.scrollTop=chat.scrollHeight;
+}
+
+async function askAgent(userQuestion=''){
+  if(isThinking)return;
+  isThinking=true;
+  const btn=document.querySelector('button[onclick*="askAgent()"]');
+  if(btn){btn.textContent='⏳ Analyse...';btn.disabled=true;}
+  const chat=document.getElementById('agentChat');
+  const typing=document.createElement('div');
+  typing.id='typing-ind';
+  typing.style.cssText='display:flex;gap:8px;align-items:center;padding:8px 0';
+  typing.innerHTML=`<div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--green));display:flex;align-items:center;justify-content:center">🧠</div>
+    <div style="display:flex;gap:4px">${[0,150,300].map(d=>`<div style="width:7px;height:7px;border-radius:50%;background:var(--teal);animation:blink 1s ${d}ms infinite"></div>`).join('')}
+    <span style="font-size:11px;color:var(--muted);margin-left:6px;font-style:italic">Analyse en cours...</span></div>`;
+  chat.appendChild(typing);
+  chat.scrollTop=chat.scrollHeight;
+  try{
+    const result=await callClaudeAPI(buildPrompt(userQuestion));
+    document.getElementById('typing-ind')?.remove();
+    addChatBubble(result,!!userQuestion,userQuestion);
+    if(result.action==='PUMP_ON'&&!state.pump){state.pump=true;updateAll();pumpAutoCount++;document.getElementById('agentPumpCount').textContent=pumpAutoCount+'x';fetch(`${window.location.protocol}//${PI_IP}/pump/on`,{method:'POST'}).catch(()=>{});addAlert('info','Agent IA: pompe demarree automatiquement');}
+    else if(result.action==='PUMP_OFF'&&state.pump){state.pump=false;updateAll();fetch(`${window.location.protocol}//${PI_IP}/pump/off`,{method:'POST'}).catch(()=>{});addAlert('info','Agent IA: pompe arretee automatiquement');}
+    if(result.alert==='CRITICAL'){const b=document.getElementById('alertBanner');document.getElementById('alertBannerText').textContent='IA: '+result.message;b.className='alert-banner show danger';setTimeout(()=>b.className='alert-banner',8000);}
+    agentLog.unshift({...result,time:new Date().toLocaleTimeString('fr-FR')});
+    document.getElementById('agentCount').textContent=agentLog.length;
+    document.getElementById('agentLastTime').textContent=new Date().toLocaleTimeString('fr-FR');
+    appendReportLine(result.report_line);
+    const input=document.getElementById('agentQuestion');
+    if(input)input.value='';
+  }catch(e){document.getElementById('typing-ind')?.remove();}
+  isThinking=false;
+  if(btn){btn.textContent='⚡ ANALYSER';btn.disabled=false;}
+}
+
+let reportLines=[];
+function appendReportLine(line){
+  if(!line)return;
+  reportLines.unshift({time:new Date().toLocaleTimeString('fr-FR'),text:line});
+  if(reportLines.length>20)reportLines.pop();
+  renderReport();
+}
+function renderReport(){
+  const el=document.getElementById('agentReport');
+  const date=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  el.innerHTML=`<div style="font-family:var(--mono);font-size:9px;color:var(--teal);letter-spacing:1px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">RAPPORT — ${date.toUpperCase()}</div>`+
+  (reportLines.length===0?'<div style="color:var(--muted);font-size:11px;text-align:center;padding:16px">Lancer l analyse</div>':
+  reportLines.map(r=>`<div class="report-line"><span class="report-time">${r.time}</span><span class="report-text">${r.text}</span></div>`).join(''));
+}
+async function generateReport(){for(let i=0;i<3;i++){await askAgent();await new Promise(r=>setTimeout(r,600));}}
+setInterval(()=>{if(!isThinking)askAgent();},30000);
+setTimeout(()=>askAgent(),2000);
+</script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Historique données
+const MAX_POINTS = 20;
+const histTemp = [], histSoil = [], histGas = [], histLabels = [];
+
+function addToHistory(t, s, g) {
+  const now = new Date().toLocaleTimeString('fr-FR');
+  histLabels.push(now);
+  histTemp.push(t);
+  histSoil.push(s);
+  histGas.push(g);
+  if (histLabels.length > MAX_POINTS) {
+    histLabels.shift(); histTemp.shift();
+    histSoil.shift(); histGas.shift();
+  }
+  if (chartTemp) {
+    chartTemp.data.labels = [...histLabels];
+    chartTemp.data.datasets[0].data = [...histTemp];
+    chartTemp.update('none');
+  }
+  if (chartSoil) {
+    chartSoil.data.labels = [...histLabels];
+    chartSoil.data.datasets[0].data = [...histSoil];
+    chartSoil.update('none');
+  }
+  if (chartGas) {
+    chartGas.data.labels = [...histLabels];
+    chartGas.data.datasets[0].data = [...histGas];
+    chartGas.update('none');
+  }
+}
+
+const chartCfg = (label, color, data) => ({
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      label,
+      data,
+      borderColor: color,
+      backgroundColor: color + '22',
+      borderWidth: 2,
+      pointRadius: 2,
+      tension: 0.4,
+      fill: true
+    }]
+  },
+  options: {
+    responsive: true,
+    animation: false,
+    plugins: { legend: { labels: { color: '#aaa', font: { size: 11 } } } },
+    scales: {
+      x: { ticks: { color: '#555', maxTicksLimit: 6 }, grid: { color: '#1a2a1a' } },
+      y: { ticks: { color: '#aaa' }, grid: { color: '#1a2a1a' } }
+    }
+  }
+});
+
+let chartTemp, chartSoil, chartGas;
+
+window.addEventListener('load', () => {
+  const ctx1 = document.getElementById('chartTemp');
+  const ctx2 = document.getElementById('chartSoil');
+  const ctx3 = document.getElementById('chartGas');
+  if (ctx1) chartTemp = new Chart(ctx1, chartCfg('Temperature (C)', '#ffb800', histTemp));
+  if (ctx2) chartSoil = new Chart(ctx2, chartCfg('Humidite Sol (%)', '#00C853', histSoil));
+  if (ctx3) chartGas  = new Chart(ctx3, chartCfg('Gaz MQ135 (ppm)', '#b87fff', histGas));
+});
+</script>
+
+</body>
+</html>
